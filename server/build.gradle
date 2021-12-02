@@ -1,0 +1,19 @@
+plugins{
+    id 'java'
+    id "com.google.protobuf" version "0.8.18"
+}
+
+dependencies {
+    protobuf files("$rootDir/model")
+    implementation 'com.google.protobuf:protobuf-java:3.19.1'
+    implementation "io.projectreactor.netty:reactor-netty-core:1.0.13"
+    implementation 'org.slf4j:slf4j-api:1.7.25'
+    implementation 'ch.qos.logback:logback-classic:1.2.3'
+}
+
+protobuf {
+    protoc {
+        artifact = 'com.google.protobuf:protoc:3.19.1'
+    }
+    generatedFilesBaseDir = "$projectDir/src/generated"
+}
