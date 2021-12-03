@@ -29,22 +29,48 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-//    sourceSets {
-//        main {
-//            proto {
-//                srcDir "$rootProject/model"
-//            }
-//        }
-//    }
-    sourceSets {
-        main {
-            proto {
-
-            }
-            java {
-                srcDir 'src/main/files/generated'
-            }
+    flavorDimensions 'local'
+    productFlavors{
+        local {
+            dimension 'local'
+            buildConfigField("String", "SERVER_IP", "\"" + getLocalIPv4()[0] + "\"")
+            buildConfigField("int", "SERVER_PORT", getProperty("server.port"))
         }
+    }
+
+}
+def getProperty(String propName) {
+    def propsFile = rootProject.file("gradle.properties")
+    if (propsFile.exists()) {
+        def props = new Properties()
+        props.load(new FileInputStream(propsFile))
+        if (props[propName] != null) {
+            return props[propName]
+        } else {
+            print("No such property " + propName + " in file " + filename)
+        }
+    } else {
+        print(filename + " does not exist!")
+    }
+}
+
+def getLocalIPv4() {
+    def ip4s = []
+    NetworkInterface.getNetworkInterfaces()
+            .findAll { it.isUp() && !it.isLoopback() && !it.isVirtual() }
+            .each {
+                it.getInetAddresses()
+                        .findAll { !it.isLoopbackAddress() && it instanceof Inet4Address }
+                        .each {
+                            ip4s << it.getHostAddress()
+                        }
+            }
+    return ip4s
+}
+
+task printIp {
+    doLast {
+        println getLocalIPv4()
     }
 }
 

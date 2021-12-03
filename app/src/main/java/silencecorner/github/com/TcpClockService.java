@@ -50,8 +50,8 @@ public class TcpClockService extends Service {
         ObservableField<String> observableField = new ObservableField<>();
         observableField.set(LocalDateTime.now().format(dateTimeFormatter));
         MainActivity.CLOCK_MODEL.setTime(observableField);
-        this.ip = "192.168.0.100";
-        this.port = 1234;
+        this.ip = BuildConfig.SERVER_IP;
+        this.port = BuildConfig.SERVER_PORT;
         executorService.execute(this::start0);
         startMeForeground();
         // retry
