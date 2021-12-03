@@ -32,9 +32,12 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class TcpClockService extends Service {
+    private static final String TAG = "TcpClockService";
     private final AtomicBoolean working = new AtomicBoolean(false);
+    private final AtomicInteger retryTimes = new AtomicInteger();
     private DataInputStream dataInputStream;
     private DataOutputStream dataOutputStream;
     private String ip;
@@ -53,12 +56,12 @@ public class TcpClockService extends Service {
         startMeForeground();
         // retry
         scheduledExecutorService.scheduleAtFixedRate(() -> {
-            if (!working.get()){
+            if (!working.get() && retryTimes.get() < 500){
+                Log.w(TAG,"retry connecting at " + retryTimes.incrementAndGet());
                 start0();
                 executorService.execute(this::start0);
                 startMeForeground();
             }
-            Log.e("retry connecting","");
         },10,5, TimeUnit.SECONDS);
     }
 
@@ -76,7 +79,7 @@ public class TcpClockService extends Service {
             socket = new Socket(inetAddress, port);
             working.set(true);
         } catch (IOException e) {
-            Log.w("客户端连接服务端错误",e);
+            Log.e(TAG,"客户端连接服务端错误",e);
             working.set(false);
         }
         if (!working.get()){
@@ -92,12 +95,12 @@ public class TcpClockService extends Service {
                }
             }
         } catch (IOException e) {
-            Log.w("读取数据错误",e);
+            Log.e(TAG,"读取数据错误",e);
             working.set(false);
             try {
                 socket.close();
             } catch (IOException ioException) {
-                Log.w("关闭连接错误",e);
+                Log.e(TAG,"关闭连接错误",e);
             }
         }
     }
