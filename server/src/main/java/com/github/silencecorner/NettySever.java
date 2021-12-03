@@ -3,6 +3,8 @@ package com.github.silencecorner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.concurrent.ExecutorService;
@@ -23,10 +25,10 @@ public class NettySever {
     public static void main(String[] args) {
         TcpServer.create()
                 .doOnBound(disposableServer -> {
-                    log.info("客户端ip[{}] port[{}]连接", disposableServer.host(), disposableServer.port());
+                    log.info("服务器ip[{}] port[{}]已启动", disposableServer.host(), disposableServer.port());
                 })
                 .doOnUnbound(disposableServer -> {
-                    log.info("客户端ip[{}] port[{}]连接", disposableServer.host(), disposableServer.port());
+                    log.info("服务器ip[{}] port[{}]已启动", disposableServer.host(), disposableServer.port());
                 })
                 .doOnConnection(connection -> {
                     connection.addHandler(new LengthFieldBasedFrameDecoder(1048576, 0, 4, 0, 4));
@@ -36,6 +38,8 @@ public class NettySever {
                     SCHEDULED_EXECUTOR_SERVICE.scheduleAtFixedRate(() -> {
                         connection.channel().writeAndFlush(Clock.newBuilder().setNow(LocalDateTime.now().toEpochSecond(ZoneOffset.of("+8"))).build());
                     }, 1,1, TimeUnit.SECONDS);
+                    InetSocketAddress remoteAddress = (InetSocketAddress)connection.channel().remoteAddress();
+                    log.info("客户端ip[{}] port[{}]已连接", remoteAddress.getHostString(),remoteAddress.getPort());
 
                 })
                 .host("0.0.0.0")

@@ -87,7 +87,9 @@ public class TcpClockService extends Service {
             dataOutputStream = new DataOutputStream(socket.getOutputStream());
             while (working.get()){
                Clock clock = Clock.parseDelimitedFrom(socket.getInputStream());
-               MainActivity.CLOCK_MODEL.getTime().set(LocalDateTime.ofEpochSecond(clock.getNow(),0, ZoneOffset.of("+8")).format(dateTimeFormatter));
+               if (!Clock.getDefaultInstance().equals(clock)) {
+                   MainActivity.CLOCK_MODEL.getTime().set(LocalDateTime.ofEpochSecond(clock.getNow(), 0, ZoneOffset.of("+8")).format(dateTimeFormatter));
+               }
             }
         } catch (IOException e) {
             Log.w("读取数据错误",e);
